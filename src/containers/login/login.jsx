@@ -1,7 +1,13 @@
 import React, {Component} from 'react';
-import { Form, Icon, Input, Button } from 'antd';
-import logo from './imgs/logo.png'
+import { Form, Icon, Input, Button, message } from 'antd';
+import {connect} from 'react-redux'
+import {reqLogin} from '../../api'
+import {
+  createSaveUserInfoAction,
+} from '../../redux/action_creators/login_action'
 import './css/login.less'
+import logo from './imgs/logo.png'
+
 const {Item} = Form
 /*
 用户名/密码的的合法性要求
@@ -13,6 +19,10 @@ const {Item} = Form
 //用户名使用声明式验证，密码使用自定义验证
 
 class Login extends Component{
+
+  componentDidMount(){
+    console.log('我是Login组件',this.props)
+  }
   //点击登录按钮的回调
   handleSubmit = (event) => {
     //阻止默认事件 -->禁止form提交，通过ajax发送
@@ -20,11 +30,34 @@ class Login extends Component{
     //validateFields：验证所有的装饰器(可以验证getFieldDecorator这个定义的所有规则)
     //values：把所有的form表单的数据整理到values对象上
     //values这个对象上的所有属性名都是使用getFieldDecorator时的被装饰者的标识名称
-    this.props.form.validateFields((err, values) => {
+    this.props.form.validateFields(async (err, values) => {
+      //values的值是对象：{username：xxx, password:xxx},xxx为表单输入的值
+      let {username,password} = values
       if(!err){
-        console.log(values)
+        // reqLogin(username,password)  //这样写也是对的
+        //   .then((result) => {
+        //     console.log("成功",result)
+        //   })
+        //   .catch((reason) => {
+        //     console.log('失败了')
+        //     console.log(reason)
+        //   })
+        //await必须放在async中，后面写promise实例，并且返回值为promise实例成功的值
+        //如果promise返回失败，就会报错，要使用try-catch处理错误
+        let result = await reqLogin(username,password)
+        let {status,msg,data} = result
+        if(status === 0){         
+          console.log(data)
+          //1、服务器返回的user信息，交给redux管理
+          this.props.saveUserInfo(data)
+          //Login是路由组件，路由组件的props属性中多了一些属性
+          //2、跳转到admin
+          this.props.history.replace('/admin')         
+        }else{
+          message.warning(msg,1)
+        }
       }else{
-        console.log(err)
+        message.error('表单输入有误，请检查！',1)
       }
     });
   }
@@ -80,7 +113,7 @@ class Login extends Component{
             <Item>
               {getFieldDecorator('password', {
                 rules: [
-                  {validator: this.passwordValidator} 
+                  {validator: this.passwordValidator}
                 ],
               })(
                 <Input
@@ -107,6 +140,11 @@ class Login extends Component{
       新组件实例对象的props多了一个强大的form属性，能完成验证的一系列操作
   3、我们暴露出去的不是Login组件，而是通过Login生成的一个新组件
 ***/
-export default Form.create()(Login)
+// export default Form.create()(Login)
 
-
+export default connect(
+  state => ({}),
+  {
+    saveUserInfo: createSaveUserInfoAction,
+  }
+)(Form.create()(Login))

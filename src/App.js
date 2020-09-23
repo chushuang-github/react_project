@@ -1,8 +1,8 @@
 import React, {Component} from 'react';
 import {Route,Switch} from 'react-router-dom'
-import Admin from './pages/admin/admin.jsx'
+import Admin from './containers/admin/admin.jsx'
 //引入的不是我们定义的那个组件，而是根据我们定义的Login生成的新组件
-import Login from './pages/login/login.jsx'
+import Login from './containers/login/login.jsx'
 
 import './App.less'
 

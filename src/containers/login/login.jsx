@@ -1,12 +1,13 @@
 import React, {Component} from 'react';
-import { Form, Icon, Input, Button, message } from 'antd';
+import { Form, Icon, Input, Button, message} from 'antd';
+import {Redirect} from 'react-router-dom'
 import {connect} from 'react-redux'
 import {reqLogin} from '../../api'
 import {
   createSaveUserInfoAction,
 } from '../../redux/action_creators/login_action'
 import './css/login.less'
-import logo from './imgs/logo.png'
+import logo from '../../static/imgs/logo.png'
 
 const {Item} = Form
 /*
@@ -20,9 +21,9 @@ const {Item} = Form
 
 class Login extends Component{
 
-  componentDidMount(){
-    console.log('我是Login组件',this.props)
-  }
+  // componentDidMount(){
+  //   console.log('我是Login组件',this.props)
+  // }
   //点击登录按钮的回调
   handleSubmit = (event) => {
     //阻止默认事件 -->禁止form提交，通过ajax发送
@@ -47,12 +48,12 @@ class Login extends Component{
         let result = await reqLogin(username,password)
         let {status,msg,data} = result
         if(status === 0){         
-          console.log(data)
+          // console.log(data)
           //1、服务器返回的user信息，交给redux管理
           this.props.saveUserInfo(data)
           //Login是路由组件，路由组件的props属性中多了一些属性
           //2、跳转到admin
-          this.props.history.replace('/admin')         
+          this.props.history.replace('/admin')
         }else{
           message.warning(msg,1)
         }
@@ -86,6 +87,11 @@ class Login extends Component{
     经过 getFieldDecorator 包装的表单控件会自动添加 value和onChange，数据同步将被 form 接管
   ***/
     const { getFieldDecorator } = this.props.form;
+    const {isLogin} = this.props
+    //如果已经登录了，直接跳转admin/home界面
+    if(isLogin){
+      return <Redirect to="/admin/home"/>
+    }
     return (
       <div className="login">
         <header>
@@ -143,8 +149,9 @@ class Login extends Component{
 // export default Form.create()(Login)
 
 export default connect(
-  state => ({}),
+  state => ({isLogin:state.userInfo.isLogin}),
   {
     saveUserInfo: createSaveUserInfoAction,
   }
 )(Form.create()(Login))
+

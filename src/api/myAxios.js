@@ -13,15 +13,16 @@ const instance = axios.create({
 instance.interceptors.request.use(
   (config) => {
     NProgress.start()
-    console.log(config)
-    console.log(config.data)   //会发现data是一个对象
     const {method,data} = config
+    // console.log(config)
+    // console.log(config.data)
+    
     //如果是post请求
     if(method.toLowerCase() === 'post'){
       //若传递过来的参数是对象(底层会偷偷的JSON.stringify)
       //我们将对象转化为urlended的编码形式，避免底层偷偷的转化为json形式
       if(data instanceof Object){
-        config.data = qs.stringify(data)
+        config.data = qs.stringify(data) 
       }
     }
     return config
@@ -29,7 +30,7 @@ instance.interceptors.request.use(
   (error) => {
     return Promise.reject(error)
   }
-)
+) 
 //响应拦截器
 instance.interceptors.response.use(
   //请求成功，但密码或用户名输入错误也会走此函数
